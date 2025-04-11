@@ -1,13 +1,13 @@
-export const config = {
-  darkMode: ["class"],
+/** @type {import('tailwindcss').Config} */
+export const darkMode = "class";
+export default {
   content: [
-    "./pages/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-    "./app/**/*.{ts,tsx}",
-    "./src/**/*.{ts,tsx}",
-    "*.{js,ts,jsx,tsx,mdx}",
+    "./pages/**/*.{js,jsx}",
+  "./components/**/*.{js,jsx}",
+  "./layout/**/*.{js,jsx}",
+  "./src/**/*.{js,jsx}",
+  "./index.html",
   ],
-  prefix: "",
   theme: {
     container: {
       center: true,
@@ -83,6 +83,5 @@ export const config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
-};
-
+  plugins: [],
+}

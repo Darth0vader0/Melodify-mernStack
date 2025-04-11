@@ -1,9 +1,7 @@
-import "./globals.css"
+import "./globlas.css"
 
-import { CustomThemeProvider } from "../"
+import { CustomThemeProvider } from "../main/theme-provider"
 
-// ✅ Inter font via CDN (Google Fonts)
-import "@fontsource/inter"; // Alternative: Use Google Fonts in index.html
 
 const RootLayout = ({ children }) => {
   return (
@@ -13,7 +11,7 @@ const RootLayout = ({ children }) => {
       enableSystem
       disableTransitionOnChange
     >
-      <SidebarProvider>{children}</SidebarProvider>
+      {children}
     </CustomThemeProvider>
   );
 };
