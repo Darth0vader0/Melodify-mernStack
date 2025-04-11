@@ -50,10 +50,20 @@ export function AppSidebar({ activeNav, setActiveNav }) {
       <SidebarContent>
         <SidebarMenu>
           {navItems.map((item) => (
-            <SidebarMenuItem key={item.name}>
-              <SidebarMenuButton isActive={activeNav === item.name} onClick={() => setActiveNav(item.name)}>
-                <item.icon className="h-5 w-5" />
-                <span>{item.label}</span>
+            <SidebarMenuItem key={item.name} className="group">
+              <SidebarMenuButton
+                isActive={activeNav === item.name}
+                onClick={() => setActiveNav(item.name)}
+                className={`flex items-center gap-3 px-4 py-2 rounded-md transition-colors ${activeNav === item.name
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-muted hover:text-muted-foreground"
+                  }`}
+              >
+                <item.icon
+                  className={`h-5 w-5 transition-transform ${activeNav === item.name ? "scale-110" : "group-hover:scale-110"
+                    }`}
+                />
+                <span className="text-sm font-medium">{item.label}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
