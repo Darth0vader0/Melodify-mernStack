@@ -16,7 +16,7 @@ export function SpotifyContent() {
       artist: "The Weeknd",
       album: "After Hours",
       duration: "3:20",
-      albumArt: "/placeholder.svg?height=200&width=200",
+      albumArt: "https://i.scdn.co/image/ab67616d0000b273373c63a4666fb7193febc167",
     },
     {
       id: 2,
@@ -24,7 +24,7 @@ export function SpotifyContent() {
       artist: "Harry Styles",
       album: "Harry's House",
       duration: "2:47",
-      albumArt: "/placeholder.svg?height=200&width=200",
+      albumArt: "https://i.scdn.co/image/ab67616d0000b273164feb363334f93b6458d2a9",
     },
     {
       id: 3,
@@ -32,7 +32,7 @@ export function SpotifyContent() {
       artist: "Steve Lacy",
       album: "Gemini Rights",
       duration: "3:52",
-      albumArt: "/placeholder.svg?height=200&width=200",
+      albumArt: "https://i.scdn.co/image/ab67616d0000b273ef24c3fdbf856340d55cfeb2",
     },
     {
       id: 4,
@@ -40,7 +40,7 @@ export function SpotifyContent() {
       artist: "Taylor Swift",
       album: "Midnights",
       duration: "3:20",
-      albumArt: "/placeholder.svg?height=200&width=200",
+      albumArt: "https://i.scdn.co/image/ab67616d0000b273ef24c3fdbf856340d55cfeb2",
     },
     {
       id: 5,
@@ -48,7 +48,7 @@ export function SpotifyContent() {
       artist: "Sam Smith & Kim Petras",
       album: "Gloria",
       duration: "2:36",
-      albumArt: "/placeholder.svg?height=200&width=200",
+      albumArt: "https://i.scdn.co/image/ab67616d0000b273373c63a4666fb7193febc167",
     },
     {
       id: 6,
@@ -56,7 +56,7 @@ export function SpotifyContent() {
       artist: "Rema & Selena Gomez",
       album: "Rave & Roses",
       duration: "3:59",
-      albumArt: "/placeholder.svg?height=200&width=200",
+      albumArt: "https://i.scdn.co/image/ab67616d00001e02ff9ca10b55ce82ae553c8228",
     },
     {
       id: 7,
@@ -64,7 +64,7 @@ export function SpotifyContent() {
       artist: "Miley Cyrus",
       album: "Endless Summer Vacation",
       duration: "3:20",
-      albumArt: "/placeholder.svg?height=200&width=200",
+      albumArt: "https://i.scdn.co/image/ab67616d0000b273373c63a4666fb7193febc167",
     },
     {
       id: 8,
@@ -72,7 +72,7 @@ export function SpotifyContent() {
       artist: "SZA",
       album: "SOS",
       duration: "2:33",
-      albumArt: "/placeholder.svg?height=200&width=200",
+      albumArt: "https://i.scdn.co/image/ab67616d0000b273164feb363334f93b6458d2a9",
     },
   ]
 

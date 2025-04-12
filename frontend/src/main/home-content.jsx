@@ -5,12 +5,12 @@ import { Card, CardContent, CardDescription, CardTitle } from "../components/ui/
 
 export function HomeContent() {
   const playlists = [
-    { id: 1, title: "Chill Vibes", songs: 24, image: "/placeholder.svg?height=150&width=150" },
-    { id: 2, title: "Workout Mix", songs: 18, image: "/placeholder.svg?height=150&width=150" },
-    { id: 3, title: "Focus Flow", songs: 32, image: "/placeholder.svg?height=150&width=150" },
-    { id: 4, title: "Party Hits", songs: 45, image: "/placeholder.svg?height=150&width=150" },
-    { id: 5, title: "Throwbacks", songs: 28, image: "/placeholder.svg?height=150&width=150" },
-    { id: 6, title: "New Releases", songs: 15, image: "/placeholder.svg?height=150&width=150" },
+    { id: 1, title: "Chill Vibes", songs: 24, image: "https://i.scdn.co/image/ab67616d0000b273373c63a4666fb7193febc167" },
+    { id: 2, title: "Workout Mix", songs: 18, image: "https://i.scdn.co/image/ab67616d00001e02ff9ca10b55ce82ae553c8228" },
+    { id: 3, title: "Focus Flow", songs: 32, image: "https://i.scdn.co/image/ab67616d0000b273495ce6da9aeb159e94eaa453" },
+    { id: 4, title: "Party Hits", songs: 45, image: "https://i.scdn.co/image/ab67616d0000b2738c8ba392dfd178ecc12010fd" },
+    { id: 5, title: "Throwbacks", songs: 28, image: "https://i.scdn.co/image/ab67616d0000b273177b49f0c89d4ec4ca73726a" },
+    { id: 6, title: "New Releases", songs: 15, image: "https://i.scdn.co/image/ab67616d0000b273164feb363334f93b6458d2a9" },
   ]
 
   const recentHistory = [
@@ -19,22 +19,22 @@ export function HomeContent() {
       title: "Blinding Lights",
       artist: "The Weeknd",
       type: "search",
-      image: "/placeholder.svg?height=60&width=60",
+      image: "https://i.scdn.co/image/ab67616d0000b273164feb363334f93b6458d2a9",
     },
     {
       id: 2,
       title: "As It Was",
       artist: "Harry Styles",
       type: "download",
-      image: "/placeholder.svg?height=60&width=60",
+      image: "https://i.scdn.co/image/ab67616d0000b2738c8ba392dfd178ecc12010fd",
     },
-    { id: 3, title: "Bad Habit", artist: "Steve Lacy", type: "search", image: "/placeholder.svg?height=60&width=60" },
+    { id: 3, title: "Bad Habit", artist: "Steve Lacy", type: "search", image: "https://i.scdn.co/image/ab67616d00001e02ff9ca10b55ce82ae553c8228" },
     {
       id: 4,
       title: "Anti-Hero",
       artist: "Taylor Swift",
       type: "download",
-      image: "/placeholder.svg?height=60&width=60",
+      image: "https://i.scdn.co/image/ab67616d0000b273373c63a4666fb7193febc167",
     },
   ]
 
