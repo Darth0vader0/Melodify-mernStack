@@ -48,6 +48,8 @@ class YoutubeController {
                     title: item.snippet.title,
                     videoId: item.id,
                     videoUrl: `https://www.youtube.com/watch?v=${item.id}`,
+                    thumbnail: item.snippet.thumbnails.high.url, // Use the high-quality thumbnail
+                    duration:item.contentDetails.duration,
                 }));
     
             return results;
