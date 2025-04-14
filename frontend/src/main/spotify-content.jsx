@@ -1,80 +1,54 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Search, Download, Play } from "lucide-react"
 import { Input } from "../components/ui/input"
 import { Card, CardContent } from "../components/ui/card"
 import { Button } from "../components/ui/button"
 
+
 export function SpotifyContent() {
   const [searchQuery, setSearchQuery] = useState("")
+  const [spotifyMusic, setSpotifyMusic] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [input, setInputValue] = useState("")
+  useEffect(() => {
+    const fetchMusic = async () => {
+      if (!searchQuery) {
+        setSpotifyMusic([]) // Clear results if the search query is empty
+        return
+      }
 
-  const spotifyMusic = [
-    {
-      id: 1,
-      title: "Blinding Lights",
-      artist: "The Weeknd",
-      album: "After Hours",
-      duration: "3:20",
-      albumArt: "https://i.scdn.co/image/ab67616d0000b273373c63a4666fb7193febc167",
-    },
-    {
-      id: 2,
-      title: "As It Was",
-      artist: "Harry Styles",
-      album: "Harry's House",
-      duration: "2:47",
-      albumArt: "https://i.scdn.co/image/ab67616d0000b273164feb363334f93b6458d2a9",
-    },
-    {
-      id: 3,
-      title: "Bad Habit",
-      artist: "Steve Lacy",
-      album: "Gemini Rights",
-      duration: "3:52",
-      albumArt: "https://i.scdn.co/image/ab67616d0000b273ef24c3fdbf856340d55cfeb2",
-    },
-    {
-      id: 4,
-      title: "Anti-Hero",
-      artist: "Taylor Swift",
-      album: "Midnights",
-      duration: "3:20",
-      albumArt: "https://i.scdn.co/image/ab67616d0000b273ef24c3fdbf856340d55cfeb2",
-    },
-    {
-      id: 5,
-      title: "Unholy",
-      artist: "Sam Smith & Kim Petras",
-      album: "Gloria",
-      duration: "2:36",
-      albumArt: "https://i.scdn.co/image/ab67616d0000b273373c63a4666fb7193febc167",
-    },
-    {
-      id: 6,
-      title: "Calm Down",
-      artist: "Rema & Selena Gomez",
-      album: "Rave & Roses",
-      duration: "3:59",
-      albumArt: "https://i.scdn.co/image/ab67616d00001e02ff9ca10b55ce82ae553c8228",
-    },
-    {
-      id: 7,
-      title: "Flowers",
-      artist: "Miley Cyrus",
-      album: "Endless Summer Vacation",
-      duration: "3:20",
-      albumArt: "https://i.scdn.co/image/ab67616d0000b273373c63a4666fb7193febc167",
-    },
-    {
-      id: 8,
-      title: "Kill Bill",
-      artist: "SZA",
-      album: "SOS",
-      duration: "2:33",
-      albumArt: "https://i.scdn.co/image/ab67616d0000b273164feb363334f93b6458d2a9",
-    },
-  ]
+      setLoading(true)
+      try {
+
+        const response = await fetch(
+          `${import.meta.env.VITE_HOST_URL}/spotify/search?q=${encodeURIComponent(searchQuery)}`
+        )
+        if (!response.ok) {
+          throw new Error("Failed to fetch Spotify music")
+        }
+        const data = await response.json()
+        const structuredData = data.results.map((item) => ({
+          title: item.title,
+          artist: item.artist,
+          album: item.album,
+          thumbnailUrl: item.thumbnailUrl || "/placeholder.svg",
+          trackId: item.trackId,
+          trackUrl: item.trackUrl,
+        }))
+        setSpotifyMusic(structuredData)
+
+      } catch (error) {
+        console.error("Error fetching Spotify music:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    const debounceFetch = setTimeout(fetchMusic, 500) // Debounce API calls
+    return () => clearTimeout(debounceFetch)
+  }, [searchQuery])
 
   return (
     <div className="container mx-auto py-6">
@@ -84,19 +58,31 @@ export function SpotifyContent() {
           type="text"
           placeholder="Search Spotify music..."
           className="border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          value={input}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              setSearchQuery(input)
+            }
+          }}
         />
       </div>
 
-      {searchQuery ? (
+      {loading ? (
+        <div className="flex h-[60vh] flex-col items-center justify-center">
+          <div className="mb-4 rounded-full bg-muted p-6">
+            <Search className="h-12 w-12 text-muted-foreground animate-spin" />
+          </div>
+          <h2 className="text-2xl font-bold">Loading...</h2>
+        </div>
+      ) : searchQuery ? (
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {spotifyMusic.map((item) => (
-            <Card key={item.id} className="group overflow-hidden transition-all hover:bg-accent">
+            <Card key={item.trackId} className="group overflow-hidden transition-all hover:bg-accent">
               <CardContent className="p-3">
                 <div className="relative mb-3 aspect-square overflow-hidden rounded-md">
                   <img
-                    src={item.albumArt || "/placeholder.svg"}
+                    src={item.thumbnailUrl || "/placeholder.svg"}
                     alt={item.title}
                     className="h-full w-full object-cover transition-all group-hover:scale-105"
                   />
@@ -113,7 +99,6 @@ export function SpotifyContent() {
                 <p className="text-sm text-muted-foreground">{item.artist}</p>
                 <div className="mt-2 flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">{item.album}</span>
-                  <span className="text-xs text-muted-foreground">{item.duration}</span>
                 </div>
               </CardContent>
             </Card>
