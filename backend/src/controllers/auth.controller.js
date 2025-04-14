@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const JwtService = require("../utils/jwt");
 const dotenv = require("dotenv");
 dotenv.config();
-
+const isProduction = process.env.NODE_ENV === "production";
 class authController {
 
     static hashPassword(password) {
@@ -61,8 +61,9 @@ class authController {
         
         res.cookie("jwt_token",token,{
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
+            secure: isProduction, // Set to true if using HTTPS
+            sameSite: isPasswordValid ? "none" : "lax",
+            path: "/",
             maxAge: 7*24 * 60 * 60 * 1000, //7 days 
         })
 

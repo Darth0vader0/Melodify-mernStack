@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
 import { Music } from "lucide-react"
-
+const backendUrl = import.meta.env.VITE_HOST_URL ;
 const SignupPage = () => {
   const [email, setEmail] = useState("")
   const [nickname, setNickname] = useState("")
@@ -13,7 +13,8 @@ const SignupPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    const result =await  fetch('http://localhost:5000/signup', {
+    console.log(backendUrl)
+    const result =await  fetch(`${backendUrl}/signup`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
