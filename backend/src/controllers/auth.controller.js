@@ -17,6 +17,7 @@ class authController {
     async signup(req, res) {
 
         const { username, nickname, email, password } = req.body;
+
         if (!username || !nickname || !email || !password) {
             return res.status(400).json({ message: "All fields are required" });
         }
@@ -36,7 +37,7 @@ class authController {
         });
 
         await newUser.save();
-        res.json({ message: "go to login user registered successfully" });
+        res.status(200).json({ success: true, message: "User created successfully", user: { id: newUser._id, username: newUser.username, nickname: newUser.nickname, email: newUser.email, avatarUrl: newUser.avatarUrl } });
     };
 
     async login(req, res) {
@@ -65,7 +66,7 @@ class authController {
             maxAge: 7*24 * 60 * 60 * 1000, //7 days 
         })
 
-        res.json({ message: "Login successfully" });
+        res.status(200).json({ success: true, message: "Login successfully", user: { id: user._id, username: user.username, nickname: user.nickname, email: user.email, avatarUrl: user.avatarUrl } });
     };
 
     async logout(req, res) {
