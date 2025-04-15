@@ -58,7 +58,7 @@ class authController {
         }
 
         const token = JwtService.generateToken(user._id,user.username,user.email,user.nickname);
-        res.cookie("jwt_token", token, {
+        res.cookie("jwt", token, {
             httpOnly: true,
             secure: isProduction,
             sameSite: isProduction ? "None" : "Lax",
