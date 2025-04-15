@@ -9,11 +9,11 @@ const path = require('path');
 const fs = require('fs');
 const ytDlpPath = path.join(__dirname, '../../bin/yt-dlp');
 
-const base64Cookie = process.env.YOUTUBE_COOKIE_BASE64;
-const cookiePath = path.join(os.tmpdir(), 'youtube.cookie');
+
+const cookiePath = path.join(__dirname, '../../bin/cookies.txt');
 
 // Decode and save the cookie
-fs.writeFileSync(cookiePath, Buffer.from(base64Cookie, 'base64'));
+
 
 const cloudinary = require('cloudinary').v2;
 cloudinary.config({
