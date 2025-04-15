@@ -1,9 +1,10 @@
 const { google } = require('googleapis');
 const {exec} = require('child_process')
 const dotEnv = require('dotenv');
-
 const { spawn } = require('child_process');
-const { title } = require('process');
+const path = require('path');
+const fs = require('fs');
+const ytDlpPath = path.join(__dirname, '../../bin/yt-dlp');
 const cloudinary = require('cloudinary').v2;
 dotEnv.config();
 cloudinary.config({
@@ -90,7 +91,7 @@ class YoutubeController {
             const safeTitle = vidTitle.replace(/[^\w\-]+/g, '_');
             const uniqueFileName = `audio_${safeTitle}_${Date.now()}`;
     
-            const ytProcess = spawn('yt-dlp', [
+            const ytProcess = spawn(ytDlpPath, [
                 '-x',
                 '--audio-format', 'mp3',
                 '--audio-quality', '0',
