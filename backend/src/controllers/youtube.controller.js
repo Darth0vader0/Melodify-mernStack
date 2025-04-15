@@ -1,8 +1,16 @@
 const { google } = require('googleapis');
 const {exec} = require('child_process')
 const dotEnv = require('dotenv');
-dotEnv.config();
 
+const { spawn } = require('child_process');
+const { title } = require('process');
+const cloudinary = require('cloudinary').v2;
+dotEnv.config();
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API,    
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 class YoutubeController {
     static parseYouTubeDuration(duration) {
@@ -71,6 +79,69 @@ class YoutubeController {
             res.status(500).json({ error: 'Error fetching YouTube data' });
         }
     }
+
+    async downloadYoutubeVideo(req, res) {
+        console.log("Fetching YouTube MP3 and uploading to Cloudinary");
+    
+        try {
+            const videoUrl = req.body.url;
+            const vidTitle = req.body.title;
+    
+            const safeTitle = vidTitle.replace(/[^\w\-]+/g, '_');
+            const uniqueFileName = `audio_${safeTitle}_${Date.now()}`;
+    
+            const ytProcess = spawn('yt-dlp', [
+                '-x',
+                '--audio-format', 'mp3',
+                '--audio-quality', '0',
+                '-o', '-', // stdout
+                videoUrl
+            ]);
+    
+            const cloudinaryStream = cloudinary.uploader.upload_stream({
+                resource_type: 'video',
+                folder: 'melodify-youtube-music',
+                public_id: uniqueFileName,
+                format: 'mp3',
+            }, (error, result) => {
+                if (error) {
+                    console.error('Cloudinary upload error:', error);
+                    return res.status(500).json({ error: 'Cloudinary upload error' });
+                }
+    
+                console.log('Cloudinary upload result:', result);
+                return res.status(200).json({
+                    message: 'File uploaded successfully',
+                    url: result.secure_url,
+                    public_id: result.public_id,
+                    title:safeTitle
+                });
+            });
+    
+            ytProcess.stdout.pipe(cloudinaryStream);
+    
+            ytProcess.stderr.on('data', (data) => {
+                console.error(`yt-dlp stderr: ${data}`);
+            });
+    
+            ytProcess.on('error', (err) => {
+                console.error('yt-dlp process error:', err);
+                return res.status(500).json({ error: 'Error spawning yt-dlp process' });
+            });
+    
+            ytProcess.on('close', (code) => {
+                if (code !== 0) {
+                    console.error(`yt-dlp exited with code ${code}`);
+                    cloudinaryStream.end();
+                }
+            });
+    
+        } catch (err) {
+            console.error('Unexpected error in download handler:', err);
+            return res.status(500).json({ error: 'Server error while processing the request' });
+        }
+    }
+    
 }
 
 module.exports = new YoutubeController();

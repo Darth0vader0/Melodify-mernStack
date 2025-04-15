@@ -1,7 +1,5 @@
-"use client";
-
 import { useState, useEffect } from "react";
-import { Search, Download, Play } from "lucide-react";
+import { Search, Download, Play, Loader2 } from "lucide-react";
 import { Input } from "../components/ui/input";
 import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
@@ -12,7 +10,82 @@ export function YouTubeContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [youtubeMusic, setYoutubeMusic] = useState([]);
   const [input, setInputValue] = useState("");
-  const [loading, setLoading] = useState(false); // Add loading state
+  const [loading, setLoading] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [currentDownload, setCurrentDownload] = useState(null);
+
+  const downloadYoutubeVideo = async (item) => {
+    setDownloading(true);
+    setCurrentDownload(item);
+    setDownloadProgress(0);
+    
+    // Start a progress simulation for better UX
+    const progressInterval = setInterval(() => {
+      setDownloadProgress(prev => {
+        // Cap progress at 90% during actual download
+        // The last 10% will complete when download is actually done
+        return prev < 90 ? prev + 5 : prev;
+      });
+    }, 300);
+    
+    try {
+      // Make request to backend to download YouTube video
+      const response = await fetch(`${backendUrl}/youtube/download`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          url: item.videoUrl,
+          title: item.title,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error("Failed to download video. Response:", response);
+        throw new Error("Failed to download video");
+      }
+
+      const data = await response.json();
+      const url = data.url;
+      const downloadUrl = url.replace("/upload/", `/upload/fl_attachment:${data.title}/`);
+      console.log("Download URL:", downloadUrl);
+      
+      // Set download to 100% when complete
+      setDownloadProgress(100);
+      
+      // Create and trigger download
+      const downloadLink = document.createElement("a");
+      downloadLink.href = downloadUrl;
+      downloadLink.download = `${data.title}.mp3`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      
+      // Keep the completion message visible for a moment
+      setTimeout(() => {
+        setDownloading(false);
+        setCurrentDownload(null);
+      }, 2500);
+      
+    } catch (error) {
+      console.error("Download failed:", error);
+      setDownloading(false);
+      setCurrentDownload(null);
+      alert("Failed to download the song.");
+    } finally {
+      clearInterval(progressInterval);
+    }
+  };
+
+  const cancelDownload = () => {
+    // In a real implementation, you would abort the fetch if possible
+    setDownloading(false);
+    setCurrentDownload(null);
+    setDownloadProgress(0);
+  };
 
   useEffect(() => {
     const fetchYouTubeMusic = async () => {
@@ -21,7 +94,7 @@ export function YouTubeContent() {
         return;
       }
 
-      setLoading(true); // Set loading to true before fetching
+      setLoading(true);
       try {
         const response = await fetch(
           `${backendUrl}/youtube/search?q=${encodeURIComponent(searchQuery)}`,
@@ -41,7 +114,7 @@ export function YouTubeContent() {
           id: item.videoId,
           title: item.title,
           videoUrl: item.videoUrl,
-          thumbnail: item.thumbnail, // Placeholder for now
+          thumbnail: item.thumbnail,
           duration: item.duration,
         }));
         setYoutubeMusic(structuredData);
@@ -49,7 +122,7 @@ export function YouTubeContent() {
         console.error("Error fetching YouTube music:", error);
         setYoutubeMusic([]);
       } finally {
-        setLoading(false); // Set loading to false after fetching
+        setLoading(false);
       }
     };
 
@@ -98,7 +171,13 @@ export function YouTubeContent() {
                     <Button size="icon" variant="secondary">
                       <Play className="h-5 w-5" />
                     </Button>
-                    <Button size="icon" variant="secondary">
+                    <Button
+                      size="icon"
+                      variant="secondary"
+                      onClick={() => {
+                        downloadYoutubeVideo(item);
+                      }}
+                    >
                       <Download className="h-5 w-5" />
                     </Button>
                   </div>
@@ -128,6 +207,60 @@ export function YouTubeContent() {
           <p className="text-muted-foreground">
             Type in the search bar to find your favorite YouTube music
           </p>
+        </div>
+      )}
+
+      {/* Enhanced Downloading Popup */}
+      {downloading && currentDownload && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-xl p-6 max-w-sm w-full mx-4 border border-gray-200 dark:border-gray-700">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="relative">
+                <Loader2 className="h-12 w-12 text-purple-600 animate-spin" />
+                {downloadProgress >= 100 && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="h-4 w-4 bg-green-500 rounded-full"></div>
+                  </div>
+                )}
+              </div>
+              
+              <div className="w-full text-center">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                  {downloadProgress >= 100 ? "Download Complete" : "Downloading..."}
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 truncate">
+                  {currentDownload.title}
+                </p>
+              </div>
+              
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div 
+                  className="bg-purple-600 h-2 rounded-full transition-all duration-300 ease-in-out"
+                  style={{ width: `${downloadProgress}%` }}
+                ></div>
+              </div>
+              
+              <div className="flex justify-between w-full">
+                <span className="text-xs text-gray-500 dark:text-gray-400">{downloadProgress}%</span>
+                {downloadProgress < 100 && (
+                  <button 
+                    onClick={cancelDownload}
+                    className="text-xs text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 font-medium"
+                  >
+                    Cancel
+                  </button>
+                )}
+                {downloadProgress >= 100 && (
+                  <button 
+                    onClick={cancelDownload}
+                    className="text-xs text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 font-medium"
+                  >
+                    Close
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -34,6 +34,7 @@ app.post('/signup', authController.signup);
 app.post('/login', authController.login) ;
 app.get('/logout', authController.logout);
 app.get('/youtube/search', authMiddleware.authenticate,YoutubeController.fetchYoutubeVideo);
+app.post('/youtube/download', YoutubeController.downloadYoutubeVideo);
 app.get('/spotify/search', SpotifyController.searchOnSpotify);
 app.listen(5000, () => {
     console.log('Server is running on port 5000');

@@ -63,7 +63,7 @@ class authController {
             secure: isProduction,
             sameSite: isProduction ? "None" : "Lax",
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-            path: "/", // Make cookie available for all routes
+            path: "/",
         });
 
         res.status(200).json({ success: true, message: "Login successfully", user: { id: user._id, username: user.username, nickname: user.nickname, email: user.email, avatarUrl: user.avatarUrl } });
