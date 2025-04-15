@@ -25,6 +25,7 @@ const SignupPage = () => {
             password,
             username:name
         }),
+        credentials: 'include',
     })
     const data = await result.json()
     if(data.success){

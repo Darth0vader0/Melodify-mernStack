@@ -7,6 +7,7 @@ const db = require('./src/config/db')
 const authController = require('./src/controllers/auth.controller');
 const YoutubeController = require('./src/controllers/youtube.controller');
 const SpotifyController = require('./src/controllers/spotify.controller');
+const authMiddleware = require('./src/middleware/auth.middleware');
 const dotenv = require('dotenv');
 dotenv.config();
 app.use(cors({
@@ -32,7 +33,7 @@ app.get('/', (req, res) => {
 app.post('/signup', authController.signup);
 app.post('/login', authController.login) ;
 app.get('/logout', authController.logout);
-app.get('/youtube/search', YoutubeController.fetchYoutubeVideo);
+app.get('/youtube/search', authMiddleware.authenticate,YoutubeController.fetchYoutubeVideo);
 app.get('/spotify/search', SpotifyController.searchOnSpotify);
 app.listen(5000, () => {
     console.log('Server is running on port 5000');

@@ -8,8 +8,8 @@ class JwtService {
     this.expirationTime = '24h'; // Token expiration time
   }
 
-  generateToken(userId) {
-    const payload = { id: userId };
+  generateToken(userId,username,email,nickname) {
+    const payload = { id: userId ,username,email,nickname };
     return jwt.sign(payload, this.secretKey, { expiresIn: this.expirationTime });
   }
 }

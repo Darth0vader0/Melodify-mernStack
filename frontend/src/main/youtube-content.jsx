@@ -24,7 +24,14 @@ export function YouTubeContent() {
       setLoading(true); // Set loading to true before fetching
       try {
         const response = await fetch(
-          `${backendUrl}/youtube/search?q=${encodeURIComponent(searchQuery)}`
+          `${backendUrl}/youtube/search?q=${encodeURIComponent(searchQuery)}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+          }
         );
         if (!response.ok) {
           throw new Error("Failed to fetch YouTube music");

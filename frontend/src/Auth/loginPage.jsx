@@ -21,6 +21,7 @@ const LoginPage = () => {
             password,
             rememberMe,
         }),
+        credentials: 'include', 
     })
     const data = await result.json()
     if(data.success){

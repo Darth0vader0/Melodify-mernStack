@@ -50,22 +50,21 @@ class authController {
         if (!user) {
             return res.status(400).json({ message: "User not found" });
         }
-        console.log(user);
+
         const isPasswordValid = authController.comparePassword(password, user.passwordHash);
 
         if (!isPasswordValid) {
             return res.status(400).json({ message: "Invalid password" });
         }
 
-        const token = JwtService.generateToken(user._id);
-        
-        res.cookie("jwt_token",token,{
+        const token = JwtService.generateToken(user._id,user.username,user.email,user.nickname);
+        res.cookie("jwt_token", token, {
             httpOnly: true,
-            secure: isProduction, // Set to true if using HTTPS
-            sameSite: isPasswordValid ? "none" : "lax",
-            path: "/",
-            maxAge: 7*24 * 60 * 60 * 1000, //7 days 
-        })
+            secure: isProduction,
+            sameSite: isProduction ? "None" : "Lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+            path: "/", // Make cookie available for all routes
+        });
 
         res.status(200).json({ success: true, message: "Login successfully", user: { id: user._id, username: user.username, nickname: user.nickname, email: user.email, avatarUrl: user.avatarUrl } });
     };
