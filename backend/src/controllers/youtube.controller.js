@@ -1,12 +1,21 @@
 const { google } = require('googleapis');
 const {exec} = require('child_process')
+const os = require('os');
 const dotEnv = require('dotenv');
+dotEnv.config();
+
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const ytDlpPath = path.join(__dirname, '../../bin/yt-dlp');
+
+const base64Cookie = process.env.YOUTUBE_COOKIE_BASE64;
+const cookiePath = path.join(os.tmpdir(), 'youtube.cookie');
+
+// Decode and save the cookie
+fs.writeFileSync(cookiePath, Buffer.from(base64Cookie, 'base64'));
+
 const cloudinary = require('cloudinary').v2;
-dotEnv.config();
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API,    
@@ -92,6 +101,7 @@ class YoutubeController {
             const uniqueFileName = `audio_${safeTitle}_${Date.now()}`;
     
             const ytProcess = spawn(ytDlpPath, [
+                '--cookies', cookiePath,
                 '-x',
                 '--audio-format', 'mp3',
                 '--audio-quality', '0',
