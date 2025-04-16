@@ -10,7 +10,8 @@ const fs = require('fs');
 const ytDlpPath = path.join(__dirname, '../../bin/yt-dlp');
 
 
-const cookiePath = path.join(__dirname, '../../bin/cookies.txt');
+
+const cookiePath = path.resolve(__dirname, '../../bin/cookie.txt');
 
 // Decode and save the cookie
 
@@ -92,7 +93,7 @@ class YoutubeController {
 
     async downloadYoutubeVideo(req, res) {
         console.log("Fetching YouTube MP3 and uploading to Cloudinary");
-    
+        console.log("Using cookies from:", cookiePath);
         try {
             const videoUrl = req.body.url;
             const vidTitle = req.body.title;
