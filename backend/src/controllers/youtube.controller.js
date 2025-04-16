@@ -101,12 +101,23 @@ class YoutubeController {
             const safeTitle = vidTitle.replace(/[^\w\-]+/g, '_');
             const uniqueFileName = `audio_${safeTitle}_${Date.now()}`;
     
+            console.log('Executing yt-dlp with command:', ytDlpPath, [
+                '--cookies', cookiePath,
+                '-x',
+                '--audio-format', 'mp3',
+                '--audio-quality', '0',
+                '-o', '-', // stdout
+                videoUrl
+            ]);
+    
             const ytProcess = spawn(ytDlpPath, [
                 '--cookies', cookiePath,
                 '-x',
                 '--audio-format', 'mp3',
                 '--audio-quality', '0',
                 '-o', '-', // stdout
+                '--add-header', 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                '--add-header', 'Accept-Language: en-US,en;q=0.9',
                 videoUrl
             ]);
     
@@ -126,14 +137,14 @@ class YoutubeController {
                     message: 'File uploaded successfully',
                     url: result.secure_url,
                     public_id: result.public_id,
-                    title:safeTitle
+                    title: safeTitle
                 });
             });
     
             ytProcess.stdout.pipe(cloudinaryStream);
     
             ytProcess.stderr.on('data', (data) => {
-                console.error(`yt-dlp stderr: ${data}`);
+                console.error(`yt-dlp stderr: ${data.toString()}`);
             });
     
             ytProcess.on('error', (err) => {
