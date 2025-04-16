@@ -92,8 +92,7 @@ class YoutubeController {
     }
 
     async downloadYoutubeVideo(req, res) {
-        console.log("Fetching YouTube MP3 and uploading to Cloudinary");
-        console.log("Using cookies from:", cookiePath);
+        console.log("Fetching YouTube MP3 and uploading to Cloudinary using Brave browser cookies");
         try {
             const videoUrl = req.body.url;
             const vidTitle = req.body.title;
@@ -101,8 +100,8 @@ class YoutubeController {
             const safeTitle = vidTitle.replace(/[^\w\-]+/g, '_');
             const uniqueFileName = `audio_${safeTitle}_${Date.now()}`;
     
-            console.log('Executing yt-dlp with command:', ytDlpPath, [
-                '--cookies', cookiePath,
+            console.log('Executing yt-dlp with Brave browser cookies:', ytDlpPath, [
+                '--cookies-from-browser', 'brave',
                 '-x',
                 '--audio-format', 'mp3',
                 '--audio-quality', '0',
@@ -111,7 +110,7 @@ class YoutubeController {
             ]);
     
             const ytProcess = spawn(ytDlpPath, [
-                '--cookies', cookiePath,
+                '--cookies-from-browser', 'brave',
                 '-x',
                 '--audio-format', 'mp3',
                 '--audio-quality', '0',
