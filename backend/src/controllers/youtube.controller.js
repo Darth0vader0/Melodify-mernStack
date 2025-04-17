@@ -1,6 +1,5 @@
 const { google } = require('googleapis');
 const {exec} = require('child_process')
-const os = require('os');
 const dotEnv = require('dotenv');
 dotEnv.config();
 
@@ -34,7 +33,7 @@ class YoutubeController {
     }
 
     static async searchOnYoutube(query) {
-        
+
         const youtube = google.youtube({
             version: 'v3',
             auth: process.env.YOUTUBE_API_KEY,
@@ -55,7 +54,7 @@ class YoutubeController {
                 id: videoIds,
                 key: process.env.YOUTUBE_API_KEY,
             });
-    
+
             // Step 3: Filter videos based on duration (2 to 8 minutes)
             const results = detailsResponse.data.items
                 .filter(item => {
@@ -70,7 +69,7 @@ class YoutubeController {
                     thumbnail: item.snippet.thumbnails.high.url, // Use the high-quality thumbnail
                     duration:item.contentDetails.duration,
                 }));
-    
+
             return results;
 
         } catch (error) {
@@ -79,47 +78,26 @@ class YoutubeController {
         }
     }
 
-    async fetchYoutubeVideo(req, res) {
-        console.log("Fetching Youtube Video")
-        try {
-            const query = req.query.q || "never gonna give up";
-            const results = await YoutubeController.searchOnYoutube(query);
-            res.json(results);
-        } catch (error) {
-            console.log('Error fetching YouTube data:', error);
-            res.status(500).json({ error: 'Error fetching YouTube data' });
-        }
-    }
 
     async downloadYoutubeVideo(req, res) {
-        console.log("Fetching YouTube MP3 and uploading to Cloudinary using Brave browser cookies");
+        console.log("Fetching YouTube MP3 and uploading to Cloudinary");
+        console.log("Using cookies from:", cookiePath);
         try {
             const videoUrl = req.body.url;
             const vidTitle = req.body.title;
-    
+
             const safeTitle = vidTitle.replace(/[^\w\-]+/g, '_');
             const uniqueFileName = `audio_${safeTitle}_${Date.now()}`;
-    
-            console.log('Executing yt-dlp with Brave browser cookies:', ytDlpPath, [
-                '--cookies-from-browser', 'brave',
-                '-x',
-                '--audio-format', 'mp3',
-                '--audio-quality', '0',
-                '-o', '-', // stdout
-                videoUrl
-            ]);
-    
+
             const ytProcess = spawn(ytDlpPath, [
-                '--cookies-from-browser', 'brave',
+                '--cookies', cookiePath,
                 '-x',
                 '--audio-format', 'mp3',
                 '--audio-quality', '0',
                 '-o', '-', // stdout
-                '--add-header', 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                '--add-header', 'Accept-Language: en-US,en;q=0.9',
                 videoUrl
             ]);
-    
+
             const cloudinaryStream = cloudinary.uploader.upload_stream({
                 resource_type: 'video',
                 folder: 'melodify-youtube-music',
@@ -130,40 +108,38 @@ class YoutubeController {
                     console.error('Cloudinary upload error:', error);
                     return res.status(500).json({ error: 'Cloudinary upload error' });
                 }
-    
+
                 console.log('Cloudinary upload result:', result);
                 return res.status(200).json({
                     message: 'File uploaded successfully',
                     url: result.secure_url,
                     public_id: result.public_id,
-                    title: safeTitle
+                    title:safeTitle
                 });
             });
-    
+
             ytProcess.stdout.pipe(cloudinaryStream);
-    
+
             ytProcess.stderr.on('data', (data) => {
-                console.error(`yt-dlp stderr: ${data.toString()}`);
+                console.error(`yt-dlp stderr: ${data}`);
             });
-    
+
             ytProcess.on('error', (err) => {
                 console.error('yt-dlp process error:', err);
                 return res.status(500).json({ error: 'Error spawning yt-dlp process' });
             });
-    
+
             ytProcess.on('close', (code) => {
                 if (code !== 0) {
                     console.error(`yt-dlp exited with code ${code}`);
                     cloudinaryStream.end();
                 }
             });
-    
+
         } catch (err) {
             console.error('Unexpected error in download handler:', err);
             return res.status(500).json({ error: 'Server error while processing the request' });
         }
     }
-    
-}
 
-module.exports = new YoutubeController();
+}
