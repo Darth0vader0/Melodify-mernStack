@@ -1,5 +1,6 @@
 const { google } = require('googleapis');
 const {exec} = require('child_process')
+const os = require('os');
 const dotEnv = require('dotenv');
 dotEnv.config();
 
@@ -33,7 +34,7 @@ class YoutubeController {
     }
 
     static async searchOnYoutube(query) {
-
+        
         const youtube = google.youtube({
             version: 'v3',
             auth: process.env.YOUTUBE_API_KEY,
@@ -54,7 +55,7 @@ class YoutubeController {
                 id: videoIds,
                 key: process.env.YOUTUBE_API_KEY,
             });
-
+    
             // Step 3: Filter videos based on duration (2 to 8 minutes)
             const results = detailsResponse.data.items
                 .filter(item => {
@@ -69,7 +70,7 @@ class YoutubeController {
                     thumbnail: item.snippet.thumbnails.high.url, // Use the high-quality thumbnail
                     duration:item.contentDetails.duration,
                 }));
-
+    
             return results;
 
         } catch (error) {
@@ -78,6 +79,17 @@ class YoutubeController {
         }
     }
 
+    async fetchYoutubeVideo(req, res) {
+        console.log("Fetching Youtube Video")
+        try {
+            const query = req.query.q || "never gonna give up";
+            const results = await YoutubeController.searchOnYoutube(query);
+            res.json(results);
+        } catch (error) {
+            console.log('Error fetching YouTube data:', error);
+            res.status(500).json({ error: 'Error fetching YouTube data' });
+        }
+    }
 
     async downloadYoutubeVideo(req, res) {
         console.log("Fetching YouTube MP3 and uploading to Cloudinary");
@@ -142,4 +154,7 @@ class YoutubeController {
         }
     }
 
+    
 }
+
+module.exports = new YoutubeController();
