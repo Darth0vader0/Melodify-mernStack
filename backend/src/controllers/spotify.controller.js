@@ -61,6 +61,9 @@ class SpotifyController{
     }
    }
 
+   async downloadSpotifyTrack(req, res) {
+   }
+
 
 }
 

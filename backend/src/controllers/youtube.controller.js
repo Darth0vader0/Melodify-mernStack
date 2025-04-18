@@ -8,13 +8,21 @@ const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const ytDlpPath = path.join(__dirname, '../../bin/yt-dlp');
-
+const CookieDecryptor = require('../config/decrypt');
 
 
 const cookiePath = path.resolve(__dirname, '../../bin/cookie.txt');
 
 // Decode and save the cookie
+const decryptor = new CookieDecryptor(process.env.ENCRYPTION_SECRET);
+const encryptedCookies = process.env.ENCRYPTED_COOKIES; // Replace with actual encrypted data
+const decryptedCookies = decryptor.decrypt(encryptedCookies);
 
+
+console.log('Decrypted Cookies:', decryptedCookies);
+const tempCookiePath = path.join(os.tmpdir(), `cookie_${Date.now()}.txt`);
+fs.writeFileSync(tempCookiePath, decryptedCookies);
+console.log('Decrypted cookie saved to:', tempCookiePath);
 
 const cloudinary = require('cloudinary').v2;
 cloudinary.config({
@@ -102,7 +110,8 @@ class YoutubeController {
             const uniqueFileName = `audio_${safeTitle}_${Date.now()}`;
 
             const ytProcess = spawn(ytDlpPath, [
-                '--cookies', cookiePath,
+                '--cookies', tempCookiePath,
+                '--proxy','http://bywqkxjo:37oxzyzxfokw@38.153.152.244:9594',
                 '-x',
                 '--audio-format', 'mp3',
                 '--audio-quality', '0',
