@@ -11,7 +11,7 @@ const ytDlpPath = path.join(__dirname, '../../bin/yt-dlp');
 const CookieDecryptor = require('../config/decrypt');
 
 
-const cookiePath = path.resolve(__dirname, '../../bin/cookie.txt');
+
 
 // Decode and save the cookie
 const decryptor = new CookieDecryptor(process.env.ENCRYPTION_SECRET);
@@ -101,7 +101,7 @@ class YoutubeController {
 
     async downloadYoutubeVideo(req, res) {
         console.log("Fetching YouTube MP3 and uploading to Cloudinary");
-        console.log("Using cookies from:", cookiePath);
+        
         try {
             const videoUrl = req.body.url;
             const vidTitle = req.body.title;
@@ -111,10 +111,13 @@ class YoutubeController {
 
             const ytProcess = spawn(ytDlpPath, [
                 '--cookies', tempCookiePath,
-                '--proxy','http://bywqkxjo:37oxzyzxfokw@38.153.152.244:9594',
+                '--proxy', 'http://bywqkxjo:37oxzyzxfokw@38.153.152.244:9594',
                 '-x',
                 '--audio-format', 'mp3',
                 '--audio-quality', '0',
+                '--limit-rate', '500K',
+                '--socket-timeout', '30', // Increased timeout
+                '--retries', '5',         // Retry up to 5 times
                 '-o', '-', // stdout
                 videoUrl
             ]);
