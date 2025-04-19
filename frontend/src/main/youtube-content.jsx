@@ -30,8 +30,18 @@ export function YouTubeContent() {
     }, 300);
     
     try {
+      const ngrokResponse = await fetch(`${backendUrl}/getNgrokUrl`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+
+      const ngrokData = await ngrokResponse.json();
+
       // Make request to backend to download YouTube video
-      const response = await fetch(`${backendUrl}/youtube/download`, {
+      const response = await fetch(`${ngrokData.url}/downloadYoutubeMusic`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -51,7 +61,7 @@ export function YouTubeContent() {
       const data = await response.json();
       const url = data.url;
       const downloadUrl = url.replace("/upload/", `/upload/fl_attachment:${data.title}/`);
-      console.log("Download URL:", downloadUrl);
+
       
       // Set download to 100% when complete
       setDownloadProgress(100);

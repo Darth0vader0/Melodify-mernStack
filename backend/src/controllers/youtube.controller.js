@@ -9,7 +9,7 @@ const path = require('path');
 const fs = require('fs');
 const ytDlpPath = path.join(__dirname, '../../bin/yt-dlp');
 const CookieDecryptor = require('../config/decrypt');
-
+const NgrokURL = require('../models/ng.model');
 
 
 
@@ -19,10 +19,9 @@ const encryptedCookies = process.env.ENCRYPTED_COOKIES; // Replace with actual e
 const decryptedCookies = decryptor.decrypt(encryptedCookies);
 
 
-console.log('Decrypted Cookies:', decryptedCookies);
 const tempCookiePath = path.join(os.tmpdir(), `cookie_${Date.now()}.txt`);
 fs.writeFileSync(tempCookiePath, decryptedCookies);
-console.log('Decrypted cookie saved to:', tempCookiePath);
+
 
 const cloudinary = require('cloudinary').v2;
 cloudinary.config({
@@ -97,6 +96,24 @@ class YoutubeController {
             console.log('Error fetching YouTube data:', error);
             res.status(500).json({ error: 'Error fetching YouTube data' });
         }
+    }
+    async getNgrokUrl(req, res) {
+        try {
+            console.log("Fetching Ngrok URL")
+            // Fetch the latest URL from the database (you can adjust this based on your logic)
+            const ngrokUrlData = await NgrokURL.findOne().sort({ createdAt: -1 });
+        
+            if (!ngrokUrlData) {
+              return res.status(404).json({ message: 'URL not found' });
+            }
+        
+            // Respond with the URL
+            res.status(200).json({ url: ngrokUrlData.url });
+          } catch (err) {
+            console.error('Error fetching URL:', err);
+            res.status(500).json({ message: 'Error fetching URL from database' });
+          }
+
     }
 
     async downloadYoutubeVideo(req, res) {
