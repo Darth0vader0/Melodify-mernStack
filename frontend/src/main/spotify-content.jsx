@@ -5,7 +5,7 @@ import { Search, Download, Play } from "lucide-react"
 import { Input } from "../components/ui/input"
 import { Card, CardContent } from "../components/ui/card"
 import { Button } from "../components/ui/button"
-
+const backendUrl = import.meta.env.VITE_HOST_URL;
 
 export function SpotifyContent() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -57,6 +57,60 @@ export function SpotifyContent() {
     return () => clearTimeout(debounceFetch)
   }, [searchQuery])
 
+  const downloadSpotifyMusic = async (music) => {
+    try{
+
+      const ngrokResponse = await fetch(`${backendUrl}/getNgrokUrl`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+
+      const ngrokData = await ngrokResponse.json();
+    
+
+      const response = await fetch(`${ngrokData.url}/downloadSpotifyMusic`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          name : music.title,
+          artist: music.artist,
+        }),
+      })
+
+
+      if (!response.ok) {
+        console.error("Failed to download video. Response:", response);
+        throw new Error("Failed to download video");
+      }
+
+      const data = await response.json();
+      const url = data.url;
+      const downloadUrl = url.replace("/upload/", `/upload/fl_attachment:${data.title}/`);
+
+      
+      // Set download to 100% when complete
+      
+      // Create and trigger download
+      const downloadLink = document.createElement("a");
+      downloadLink.href = downloadUrl;
+      downloadLink.download = `${data.title}.mp3`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+
+
+    }catch(error){
+      console.error("Error downloading Spotify music:", error)
+    }
+  }
+
+
   return (
     <div className="container mx-auto py-6">
       <div className="mb-6 flex items-center gap-2 rounded-lg border bg-card p-2">
@@ -97,7 +151,9 @@ export function SpotifyContent() {
                     <Button size="icon" variant="secondary" className="h-10 w-10">
                       <Play className="h-5 w-5" />
                     </Button>
-                    <Button size="icon" variant="secondary" className="h-10 w-10">
+                    <Button size="icon" variant="secondary" className="h-10 w-10"
+                     onClick={() => downloadSpotifyMusic(item)}
+                    >
                       <Download className="h-5 w-5" />
                     </Button>
                   </div>
