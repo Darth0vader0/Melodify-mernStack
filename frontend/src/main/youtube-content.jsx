@@ -3,6 +3,7 @@ import { Search, Download, Play, Loader2 } from "lucide-react";
 import { Input } from "../components/ui/input";
 import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
+import { MusicPlayer } from "./music-player";
 
 const backendUrl = import.meta.env.VITE_HOST_URL;
 
@@ -14,21 +15,64 @@ export function YouTubeContent() {
   const [downloading, setDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [currentDownload, setCurrentDownload] = useState(null);
+  const [currentSong, setCurrentSong] = useState(null);
+  const [isPlayerVisible, setIsPlayerVisible] = useState(false);
+  const [isPlayerLoading, setIsPlayerLoading] = useState(false);
+  const playSong = async (item) => {
+    try {
+      setCurrentSong(item);
+      setIsPlayerLoading(true); // Set loading to true before fetching
+      setIsPlayerVisible(true);
+  
+      const ngrokResponse = await fetch(`${backendUrl}/getNgrokUrl`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+  
+      const ngrokData = await ngrokResponse.json();
+  
+      const response = await fetch(`${ngrokData.url}/downloadYoutubeMusic`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          url: item.videoUrl,
+          title: item.title,
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to fetch song URL");
+      }
+  
+      const data = await response.json();
+      const songUrl = data.url.replace(
+        "/upload/",
+        `/upload/fl_attachment:${data.title}/`
+      );
+      setIsPlayerLoading(false); // Set loading to false when the song URL is ready
+      setCurrentSong({ ...item, url: songUrl });
+    } catch (error) {
+      console.error("Error playing song:", error);
+      alert("Failed to play the song.");
+      setIsPlayerLoading(false); // Ensure loading is reset on error
+    }
+  };
 
   const downloadYoutubeVideo = async (item) => {
     setDownloading(true);
     setCurrentDownload(item);
     setDownloadProgress(0);
-    
-    // Start a progress simulation for better UX
+
     const progressInterval = setInterval(() => {
-      setDownloadProgress(prev => {
-        // Cap progress at 90% during actual download
-        // The last 10% will complete when download is actually done
-        return prev < 90 ? prev + 5 : prev;
-      });
+      setDownloadProgress((prev) => (prev < 90 ? prev + 5 : prev));
     }, 300);
-    
+
     try {
       const ngrokResponse = await fetch(`${backendUrl}/getNgrokUrl`, {
         method: "GET",
@@ -40,7 +84,6 @@ export function YouTubeContent() {
 
       const ngrokData = await ngrokResponse.json();
 
-      // Make request to backend to download YouTube video
       const response = await fetch(`${ngrokData.url}/downloadYoutubeMusic`, {
         method: "POST",
         headers: {
@@ -54,32 +97,29 @@ export function YouTubeContent() {
       });
 
       if (!response.ok) {
-        console.error("Failed to download video. Response:", response);
         throw new Error("Failed to download video");
       }
 
       const data = await response.json();
       const url = data.url;
-      const downloadUrl = url.replace("/upload/", `/upload/fl_attachment:${data.title}/`);
+      const downloadUrl = url.replace(
+        "/upload/",
+        `/upload/fl_attachment:${data.title}/`
+      );
 
-      
-      // Set download to 100% when complete
       setDownloadProgress(100);
-      
-      // Create and trigger download
+
       const downloadLink = document.createElement("a");
       downloadLink.href = downloadUrl;
       downloadLink.download = `${data.title}.mp3`;
       document.body.appendChild(downloadLink);
       downloadLink.click();
       document.body.removeChild(downloadLink);
-      
-      // Keep the completion message visible for a moment
+
       setTimeout(() => {
         setDownloading(false);
         setCurrentDownload(null);
       }, 2500);
-      
     } catch (error) {
       console.error("Download failed:", error);
       setDownloading(false);
@@ -91,7 +131,6 @@ export function YouTubeContent() {
   };
 
   const cancelDownload = () => {
-    // In a real implementation, you would abort the fetch if possible
     setDownloading(false);
     setCurrentDownload(null);
     setDownloadProgress(0);
@@ -139,6 +178,7 @@ export function YouTubeContent() {
     fetchYouTubeMusic();
   }, [searchQuery]);
 
+
   return (
     <div className="container mx-auto py-6">
       <div className="mb-6 flex items-center gap-2 rounded-lg border bg-card p-2">
@@ -178,7 +218,11 @@ export function YouTubeContent() {
                     />
                   </div>
                   <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/60 opacity-0 transition-opacity group-hover:opacity-100 rounded-lg">
-                    <Button size="icon" variant="secondary">
+                    <Button
+                      size="icon"
+                      variant="secondary"
+                      onClick={() => playSong(item)}
+                    >
                       <Play className="h-5 w-5" />
                     </Button>
                     <Button
@@ -220,7 +264,6 @@ export function YouTubeContent() {
         </div>
       )}
 
-      {/* Enhanced Downloading Popup */}
       {downloading && currentDownload && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
           <div className="bg-white dark:bg-gray-900 rounded-xl shadow-xl p-6 max-w-sm w-full mx-4 border border-gray-200 dark:border-gray-700">
@@ -233,27 +276,31 @@ export function YouTubeContent() {
                   </div>
                 )}
               </div>
-              
+
               <div className="w-full text-center">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-                  {downloadProgress >= 100 ? "Download Complete" : "Downloading..."}
+                  {downloadProgress >= 100
+                    ? "Download Complete"
+                    : "Downloading..."}
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 truncate">
                   {currentDownload.title}
                 </p>
               </div>
-              
+
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div 
+                <div
                   className="bg-purple-600 h-2 rounded-full transition-all duration-300 ease-in-out"
                   style={{ width: `${downloadProgress}%` }}
                 ></div>
               </div>
-              
+
               <div className="flex justify-between w-full">
-                <span className="text-xs text-gray-500 dark:text-gray-400">{downloadProgress}%</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {downloadProgress}%
+                </span>
                 {downloadProgress < 100 && (
-                  <button 
+                  <button
                     onClick={cancelDownload}
                     className="text-xs text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 font-medium"
                   >
@@ -261,7 +308,7 @@ export function YouTubeContent() {
                   </button>
                 )}
                 {downloadProgress >= 100 && (
-                  <button 
+                  <button
                     onClick={cancelDownload}
                     className="text-xs text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 font-medium"
                   >
@@ -273,6 +320,16 @@ export function YouTubeContent() {
           </div>
         </div>
       )}
+
+      {isPlayerVisible && currentSong && (
+        <MusicPlayer
+          currentSong={currentSong}
+          onClose={() => setIsPlayerVisible(false)}
+          loading={isPlayerLoading} // Pass the loading state
+          // Pass the setLoading function
+        />
+      )}
+
     </div>
   );
 }
