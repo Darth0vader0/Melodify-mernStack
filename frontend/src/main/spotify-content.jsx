@@ -6,7 +6,7 @@ import { Input } from "../components/ui/input"
 import { Card, CardContent } from "../components/ui/card"
 import { Button } from "../components/ui/button"
 const backendUrl = import.meta.env.VITE_HOST_URL;
-
+import { MusicPlayer } from "./music-player"
 export function SpotifyContent() {
   const [searchQuery, setSearchQuery] = useState("")
   const [spotifyMusic, setSpotifyMusic] = useState([])
@@ -15,6 +15,54 @@ export function SpotifyContent() {
   const [downloading, setDownloading] = useState(false)
   const [downloadProgress, setDownloadProgress] = useState(0)
   const [currentDownload, setCurrentDownload] = useState(null)
+  const [currentSong, setCurrentSong] = useState(null);
+  const [isPlayerVisible, setIsPlayerVisible] = useState(false);
+  const [isPlayerLoading, setIsPlayerLoading] = useState(false);
+  const playSong = async (item) => {
+    try {
+      setCurrentSong(item);
+      setIsPlayerLoading(true); // Set loading to true before fetching
+      setIsPlayerVisible(true);
+  
+      const ngrokResponse = await fetch(`${backendUrl}/getNgrokUrl`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+  
+      const ngrokData = await ngrokResponse.json();
+  
+      const response = await fetch(`${ngrokData.url}/downloadSpotifyMusic`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          name: item.title,
+          artist: item.artist,
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to fetch song URL");
+      }
+  
+      const data = await response.json();
+      const songUrl = data.url.replace(
+        "/upload/",
+        `/upload/fl_attachment:${data.title}/`
+      );
+      setIsPlayerLoading(false); // Set loading to false when the song URL is ready
+      setCurrentSong({ ...item, url: songUrl });
+    } catch (error) {
+      console.error("Error playing song:", error);
+      alert("Failed to play the song.");
+      setIsPlayerLoading(false); // Ensure loading is reset on error
+    }
+  };
 
   useEffect(() => {
     const fetchMusic = async () => {
@@ -168,7 +216,9 @@ export function SpotifyContent() {
                     className="h-full w-full object-cover transition-all group-hover:scale-105"
                   />
                   <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
-                    <Button size="icon" variant="secondary" className="h-10 w-10">
+                    <Button size="icon" variant="secondary" className="h-10 w-10"
+                      onClick={() => playSong(item)}
+                    >
                       <Play className="h-5 w-5" />
                     </Button>
                     <Button
@@ -251,6 +301,15 @@ export function SpotifyContent() {
             </div>
           </div>
         </div>
+      )}
+
+      {isPlayerVisible && currentSong && (
+        <MusicPlayer
+          currentSong={currentSong}
+          onClose={() => setIsPlayerVisible(false)}
+          loading={isPlayerLoading} // Pass the loading state
+          // Pass the setLoading function
+        />
       )}
     </div>
   )

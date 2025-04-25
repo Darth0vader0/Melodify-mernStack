@@ -34,38 +34,56 @@ export function MusicPlayer({  onClose, currentSong, loading })  {
   };
 
   // Handle seeking
-  const handleSeek = (e) => {
-    const seekTime = (e.nativeEvent.offsetX / e.target.clientWidth) * duration;
-    setCurrentTime(seekTime);
-    if (audioRef.current) {
-      audioRef.current.currentTime = seekTime;
+ 
+  // Update time as audio plays
+  // Update useEffect to handle metadata loading properly
+useEffect(() => {
+  const audio = audioRef.current;
+  if (!audio) return;
+
+  // Make sure to set initial values when component mounts
+  if (audio.readyState > 0) {
+    setDuration(audio.duration);
+    setCurrentTime(audio.currentTime);
+  }
+
+  const updateTime = () => setCurrentTime(audio.currentTime);
+  
+  const handleLoadedMetadata = () => {
+    setDuration(audio.duration);
+    // If the audio should be playing, ensure it starts
+    if (isPlaying) {
+      audio.play().catch(err => console.error("Playback failed:", err));
     }
   };
+  
+  const handleEnded = () => setIsPlaying(false);
 
-  // Update time as audio plays
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
+  audio.addEventListener("timeupdate", updateTime);
+  audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+  audio.addEventListener("ended", handleEnded);
 
-    const updateTime = () => setCurrentTime(audio.currentTime);
-    const handleLoadedMetadata = () => {
-      if (audioRef.current) {
-        setDuration(audioRef.current.duration || 0);
-      }
-    };
-    const handleEnded = () => setIsPlaying(false);
+  return () => {
+    audio.removeEventListener("timeupdate", updateTime);
+    audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+    audio.removeEventListener("ended", handleEnded);
+  };
+}, [isPlaying]); // Add isPlaying to dependencies
 
-    audio.addEventListener("timeupdate", updateTime);
-    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
-    audio.addEventListener("ended", handleEnded);
-
-    return () => {
-      audio.removeEventListener("timeupdate", updateTime);
-      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
-      audio.removeEventListener("ended", handleEnded);
-    };
-  }, [audioRef]);
-
+// Improve the handleSeek function to be more robust
+const handleSeek = (e) => {
+  if (!audioRef.current || !duration) return;
+  
+  const progressBar = e.currentTarget;
+  const rect = progressBar.getBoundingClientRect();
+  const seekPosition = (e.clientX - rect.left) / progressBar.clientWidth;
+  const seekTime = seekPosition * duration;
+  
+  if (audioRef.current) {
+    audioRef.current.currentTime = seekTime;
+    setCurrentTime(seekTime);
+  }
+};
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/75 backdrop-blur-md z-50">
@@ -83,11 +101,12 @@ export function MusicPlayer({  onClose, currentSong, loading })  {
         <>
           {/* Hidden audio element to handle actual playback */}
           <audio
-            autoPlay={isPlaying}
-            ref={audioRef}
-            src={song?.url || ""}
-            preload="metadata"
-          />
+  autoPlay={isPlaying}
+  ref={audioRef}
+  src={song?.url || ""}
+  preload="metadata"
+  onError={(e) => console.error("Audio error:", e)}
+/>
 
           <div className="bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-gray-800">
             {/* Header with close button */}
@@ -128,7 +147,7 @@ export function MusicPlayer({  onClose, currentSong, loading })  {
             <div className="p-6 flex flex-col items-center">
               <div className="relative mb-6 group">
                 <img
-                  src={song?.thumbnail || "/placeholder.svg"}
+                  src={song?.thumbnail || song.thumbnailUrl}
                   alt={song?.title}
                   className={`w-56 h-56 rounded-lg object-cover shadow-lg transition-transform duration-300 ${
                     isPlaying ? "scale-105" : ""
