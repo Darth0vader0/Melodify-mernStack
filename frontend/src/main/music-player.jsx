@@ -33,7 +33,7 @@ export function MusicPlayer({  onClose, currentSong, loading })  {
     }
   };
 
-  // Handle seeking
+
  
   // Update time as audio plays
   // Update useEffect to handle metadata loading properly
