@@ -34,7 +34,6 @@ app.post('/signup', authController.signup);
 app.post('/login', authController.login) ;
 app.get('/logout', authController.logout);
 app.get('/youtube/search', authMiddleware.authenticate,YoutubeController.fetchYoutubeVideo);
-app.post('/youtube/download', YoutubeController.downloadYoutubeVideo);
 app.get('/spotify/search', SpotifyController.searchOnSpotify);
 app.get('/getNgrokUrl',YoutubeController.getNgrokUrl);
 
