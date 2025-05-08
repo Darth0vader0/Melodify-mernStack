@@ -10,7 +10,7 @@ const fs = require('fs');
 const ytDlpPath = path.join(__dirname, '../../bin/yt-dlp');
 const CookieDecryptor = require('../config/decrypt');
 const NgrokURL = require('../models/ng.model');
-
+const {DownloadedSong} = require('../models/songs.model')
 
 
 // Decode and save the cookie
@@ -116,7 +116,27 @@ class YoutubeController {
 
     }
 
-   
+    async addToDownloadedSongsYoutube(req,res){
+        try{
+            const userId = req.user.id; // Assuming you have user ID from the request
+            const {  songTitle, artist, thumbnailUrl, PathUrl } = req.body;
+            const result = new DownloadedSong({
+                userId : userId,
+                spotify: false,
+                youtube : true,
+                songTitle,
+                artist,
+                PathUrl,
+                thumbnailUrl
+            })
+
+            result.save();
+        }
+        catch(err){
+             console.error('error while putting to downloaded song', err);
+             res.status(500).json({message:"internal server error"});
+        }
+    }
     
 }
 

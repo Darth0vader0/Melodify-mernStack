@@ -12,16 +12,26 @@ const songSchema = new mongoose.Schema({
 const Song = mongoose.model("Song", songSchema);
 
 const likedSongSchema = new mongoose.Schema({
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    song: { type: mongoose.Schema.Types.ObjectId, ref: "Song", required: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    songTitle: { type: String, ref: "Song", required: true },
+    spotify :{type: Boolean, default: false},
+    youtube: { type: Boolean, default: false },
+    artist: { type: String, required: true },
+    PathUrl: { type: String, required: true },
+    thumbnailUrl : { type: String },
     likedAt: { type: Date, default: Date.now },
 });
 
 const LikedSong = mongoose.model("LikedSong", likedSongSchema);
 
 const downloadedSongSchema = new mongoose.Schema({
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    song: { type: mongoose.Schema.Types.ObjectId, ref: "Song", required: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    songTitle: { type: String, ref: "Song", required: true },
+    spotify :{type: Boolean, default: false},
+    youtube: { type: Boolean, default: false },
+    artist: { type: String, required: true },
+    PathUrl: { type: String, required: true },
+    thumbnailUrl : { type: String },
     downloadedAt: { type: Date, default: Date.now },
 });
 

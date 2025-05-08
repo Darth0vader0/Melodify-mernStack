@@ -1,7 +1,7 @@
 const axios = require('axios');
 const dotEnv = require('dotenv');
 dotEnv.config();
-
+const {DownloadedSong} = require('../models/songs.model')
 class SpotifyController{
     static accessToken ='';
    static async getAccessToken(){
@@ -60,6 +60,28 @@ class SpotifyController{
         res.status(500).json({ error: "Failed to fetch songs." });
     }
    }
+    async addToDownloadedSongsSpotify(req,res){
+           try{
+               const userId = req.user.id; // Assuming you have user ID from the request
+               const {  songTitle, artist, thumbnailUrl, PathUrl } = req.body;
+               const result = new DownloadedSong({
+                   userId : userId,
+                   spotify: true,
+                   youtube : false,
+                   songTitle,
+                   artist,
+                   PathUrl,
+                   thumbnailUrl
+               })
+   
+               result.save();
+           }
+           catch(err){
+                console.error('error while putting to downloaded song', err);
+                res.status(500).json({message:"internal server error"});
+           }
+       }
+
 
    
 

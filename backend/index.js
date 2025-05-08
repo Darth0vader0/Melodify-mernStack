@@ -36,7 +36,8 @@ app.get('/logout', authController.logout);
 app.get('/youtube/search', authMiddleware.authenticate,YoutubeController.fetchYoutubeVideo);
 app.get('/spotify/search', SpotifyController.searchOnSpotify);
 app.get('/getNgrokUrl',YoutubeController.getNgrokUrl);
-
+app.post('/addToDownload',authMiddleware.authenticate,YoutubeController.addToDownloadedSongsYoutube);
+app.post('/addToDownloadForSpotify',authMiddleware.authenticate,SpotifyController.addToDownloadedSongsSpotify)
 app.listen(5000, () => {
     console.log('Server is running on port 5000');
 });
