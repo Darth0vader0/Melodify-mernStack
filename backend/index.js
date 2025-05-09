@@ -11,7 +11,7 @@ const authMiddleware = require('./src/middleware/auth.middleware');
 const dotenv = require('dotenv');
 dotenv.config();
 app.use(cors({
-    origin: ['http://localhost:5173','https://melodify-wine.vercel.app','capacitor://localhost'], // Replace with your frontend URL
+    origin: ['http://localhost:5173','https://melodify-wine.vercel.app','capacitor://localhost','http://localhost'], // Replace with your frontend URL
     credentials : true,
 }));
 
